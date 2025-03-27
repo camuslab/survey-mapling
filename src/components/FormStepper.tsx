@@ -1,139 +1,96 @@
 
 import React, { useState, useEffect } from "react";
-import { PersonalInfo, Location, SurveyStep } from "@/utils/surveyStorage";
-import { AnimatePresence, motion } from "framer-motion";
+import { SurveyStep, PersonalInfo, Location } from "@/utils/surveyStorage";
 
 interface FormStepperProps {
+  children: React.ReactNode[];
   currentStep: SurveyStep;
   onStepChange: (step: SurveyStep) => void;
-  children: React.ReactNode[];
   personalInfo: PersonalInfo;
   locations: Location[];
 }
 
 const FormStepper = ({ 
-  currentStep, 
-  onStepChange, 
   children, 
+  currentStep, 
+  onStepChange,
   personalInfo,
   locations
 }: FormStepperProps) => {
-  // State to track form validation
-  const [canProceed, setCanProceed] = useState<boolean>(false);
-  
-  // Check if current step can proceed
+  const [canAdvance, setCanAdvance] = useState(false);
+
+  // Determine if user can advance to next step
   useEffect(() => {
-    switch (currentStep) {
-      case SurveyStep.PersonalInfo:
-        // Check if essential personal info fields are filled
-        const requiredFields: (keyof PersonalInfo)[] = [
-          'age', 'gender', 'occupation', 'homeAddress', 'homeCity', 'homeState'
-        ];
-        const isPersonalInfoValid = requiredFields.every(
-          field => personalInfo[field] && personalInfo[field].trim() !== ''
-        );
-        setCanProceed(isPersonalInfoValid);
-        break;
+    if (currentStep === SurveyStep.PersonalInfo) {
+      // Check if personal info is complete enough to proceed
+      const { age, gender, homeAddress, homeCity, homeState, homeZip, homeCoordinates } = personalInfo;
+      const requiredFields = [age, gender, homeAddress, homeCity, homeState, homeZip];
+      const hasCoordinates = Array.isArray(homeCoordinates) && homeCoordinates.length === 2;
       
-      case SurveyStep.LocationInfo:
-        // Check if home coordinates exist
-        const hasHomeCoordinates = !!personalInfo.homeCoordinates;
-        // We don't require locations, but we need home coordinates
-        setCanProceed(hasHomeCoordinates);
-        break;
-        
-      case SurveyStep.Review:
-        // Always allow proceeding from review
-        setCanProceed(true);
-        break;
-        
-      default:
-        setCanProceed(false);
+      // Check if all required string fields have values and homeCoordinates is valid
+      setCanAdvance(
+        requiredFields.every(field => typeof field === 'string' && field.trim() !== '') && 
+        hasCoordinates
+      );
+    } 
+    else if (currentStep === SurveyStep.LocationInfo) {
+      // Can always proceed from location info (it's optional to add locations)
+      setCanAdvance(true);
+    }
+    else if (currentStep === SurveyStep.Review) {
+      // Can always proceed from review
+      setCanAdvance(true);
     }
   }, [currentStep, personalInfo, locations]);
 
-  // Navigation functions
-  const goToNextStep = () => {
-    if (canProceed && currentStep < children.length - 1) {
-      onStepChange(currentStep + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const goToPreviousStep = () => {
+  // Handle back button
+  const handleBack = () => {
     if (currentStep > 0) {
       onStepChange(currentStep - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  // Animation variants
-  const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? '100%' : '-100%',
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-    },
-    exit: (direction: number) => ({
-      x: direction < 0 ? '100%' : '-100%',
-      opacity: 0,
-    }),
+  // Handle next button
+  const handleNext = () => {
+    if (canAdvance && currentStep < children.length - 1) {
+      onStepChange(currentStep + 1);
+    }
   };
 
   return (
     <div className="w-full">
-      <div className="relative overflow-hidden">
-        <AnimatePresence initial={false} custom={currentStep}>
-          <motion.div
-            key={currentStep}
-            custom={currentStep}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 },
-            }}
-            className="w-full"
-          >
-            {children[currentStep]}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <div className="flex justify-between mt-8">
-        <button
-          type="button"
-          onClick={goToPreviousStep}
-          disabled={currentStep === 0}
-          className={`px-4 py-2 rounded-md transition-all 
-            ${currentStep === 0 
-              ? 'opacity-0 pointer-events-none' 
-              : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
-            }`}
-        >
-          Back
-        </button>
-        
-        <button
-          type="button"
-          onClick={goToNextStep}
-          disabled={!canProceed || currentStep === children.length - 1}
-          className={`px-4 py-2 rounded-md transition-all
-            ${!canProceed 
-              ? 'bg-muted text-muted-foreground cursor-not-allowed' 
-              : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-            }
-            ${currentStep === children.length - 1 ? 'opacity-0 pointer-events-none' : ''}
-          `}
-        >
-          {currentStep === SurveyStep.Review ? 'Submit' : 'Continue'}
-        </button>
-      </div>
+      {children[currentStep]}
+      
+      {currentStep !== SurveyStep.Completion && (
+        <div className="flex justify-between mt-8">
+          {currentStep > 0 ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"
+            >
+              Back
+            </button>
+          ) : (
+            <div></div> // Empty div for spacing
+          )}
+          
+          {currentStep < SurveyStep.Review && (
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={!canAdvance}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                canAdvance 
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
+              }`}
+            >
+              Next
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

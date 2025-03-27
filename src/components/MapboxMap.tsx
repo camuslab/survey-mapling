@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Location } from "@/utils/surveyStorage";
 import { Button } from "@/components/ui/button";
@@ -345,7 +344,17 @@ const MapboxMap = ({
       map.current.setCenter(homeCoordinates);
     }
 
-  }, [locations, mapLoaded, homeCoordinates, readOnly]);
+    // Add event listener for the remove button
+    document.querySelectorAll('.remove-location').forEach((el) => {
+      el.addEventListener('click', () => {
+        const id = el.getAttribute('data-id');
+        if (id) {
+          onChange(locations.filter(loc => loc.id !== id));
+        }
+      });
+    });
+
+  }, [locations, mapLoaded, homeCoordinates, readOnly, onChange]);
 
   // Add new location
   const addNewLocation = () => {
@@ -586,7 +595,7 @@ const MapboxMap = ({
               <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-2">Set Your Home Location</h3>
               <p className="text-muted-foreground mb-4">
-                Please set your home location to see places you frequent on the map.
+                Please set your home location to see places you frequently visit on the map.
               </p>
               {!readOnly && (
                 <Button onClick={setHomeLocation}>

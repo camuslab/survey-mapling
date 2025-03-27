@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import SurveyForm from "@/components/SurveyForm";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Map } from "lucide-react";
 
 const Survey = () => {
   const [showContent, setShowContent] = useState(false);
@@ -44,6 +44,13 @@ const Survey = () => {
               transition={{ duration: 0.5 }}
               className="max-w-4xl mx-auto bg-background rounded-xl shadow-sm border p-6 sm:p-8"
             >
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-2xl font-bold">Lifestyle Survey</h1>
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Map className="h-4 w-4 mr-1" />
+                  <span>Using Mapbox for location visualization</span>
+                </div>
+              </div>
               <SurveyForm onComplete={handleSurveyComplete} />
             </motion.div>
           )}
