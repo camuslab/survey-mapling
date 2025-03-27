@@ -201,6 +201,8 @@ const MapboxMap = ({
   });
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Location types with corresponding colors
   const locationTypes = [
@@ -388,42 +390,96 @@ const MapboxMap = ({
     setIsAddingLocation(false);
     
     toast.success("새 위치가 추가되었습니다");
-    
-    // In a real application, we would use geocoding to find the actual coordinates
-    // based on an address input from the user
   };
 
-  // Search location (mock implementation)
-  const searchLocation = () => {
+  // Geocoding API - Search for location
+  const searchLocation = async () => {
     if (!searchQuery.trim()) {
       toast.error("검색어를 입력해주세요");
       return;
     }
 
-    // Mock geocoding - in a real app this would call the Mapbox Geocoding API
-    toast.success(`위치 찾음: ${searchQuery}`);
+    setIsSearching(true);
     
-    // Generate mock coordinates near the home location
-    const homeLatitude = homeCoordinates ? homeCoordinates[1] : 40.7128;
-    const homeLongitude = homeCoordinates ? homeCoordinates[0] : -73.984;
-    
-    const latOffset = (Math.random() * 0.03) - 0.015;
-    const lngOffset = (Math.random() * 0.03) - 0.015;
-    
-    const newLat = homeLatitude + latOffset;
-    const newLng = homeLongitude + lngOffset;
-    
-    // Update the map center to the "found" location
+    try {
+      // In a real implementation, you would use Mapbox Geocoding API
+      // Example API endpoint: https://api.mapbox.com/geocoding/v5/mapbox.places/{search_text}.json?access_token={your_access_token}
+      
+      // For now, we'll mock the geocoding response
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call delay
+      
+      const mockResults = [
+        {
+          id: "1",
+          place_name: `${searchQuery} - 결과 1`,
+          center: [
+            homeCoordinates ? homeCoordinates[0] + (Math.random() * 0.02 - 0.01) : -73.98 + (Math.random() * 0.02 - 0.01),
+            homeCoordinates ? homeCoordinates[1] + (Math.random() * 0.02 - 0.01) : 40.71 + (Math.random() * 0.02 - 0.01)
+          ]
+        },
+        {
+          id: "2",
+          place_name: `${searchQuery} - 결과 2`,
+          center: [
+            homeCoordinates ? homeCoordinates[0] + (Math.random() * 0.02 - 0.01) : -73.99 + (Math.random() * 0.02 - 0.01),
+            homeCoordinates ? homeCoordinates[1] + (Math.random() * 0.02 - 0.01) : 40.72 + (Math.random() * 0.02 - 0.01)
+          ]
+        },
+        {
+          id: "3",
+          place_name: `${searchQuery} - 결과 3`,
+          center: [
+            homeCoordinates ? homeCoordinates[0] + (Math.random() * 0.02 - 0.01) : -74.00 + (Math.random() * 0.02 - 0.01),
+            homeCoordinates ? homeCoordinates[1] + (Math.random() * 0.02 - 0.01) : 40.73 + (Math.random() * 0.02 - 0.01)
+          ]
+        }
+      ];
+      
+      setSearchResults(mockResults);
+      
+      // Zoom to fit all results
+      if (map.current && mockResults.length > 0) {
+        // In a real implementation, we would use map.fitBounds
+        // For now, just center on the first result
+        const firstResult = mockResults[0];
+        map.current.setCenter(firstResult.center);
+        map.current.setZoom(13);
+      }
+      
+      toast.success(`'${searchQuery}'에 대한 검색결과 ${mockResults.length}개를 찾았습니다`);
+    } catch (error) {
+      console.error("Error searching for location:", error);
+      toast.error("위치 검색 중 오류가 발생했습니다");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Select a search result
+  const selectSearchResult = (result: any) => {
+    // Set the map view to the selected result
     if (map.current) {
-      map.current.setCenter([newLng, newLat]);
-      map.current.setZoom(13);
+      map.current.setCenter(result.center);
+      map.current.setZoom(15);
     }
     
-    // In a real app, this would:
-    // 1. Call the Mapbox Geocoding API
-    // 2. Display the results
-    // 3. Allow the user to select one
-    // 4. Use the selected coordinates for the new location
+    // If adding a location, prefill the location name
+    if (isAddingLocation) {
+      setNewLocation(prev => ({
+        ...prev,
+        name: result.place_name.split(' - ')[0], // Remove the "- 결과 X" part
+      }));
+    } else {
+      // If not already adding a location, start adding one
+      setIsAddingLocation(true);
+      setNewLocation({
+        name: result.place_name.split(' - ')[0],
+        type: 'other',
+      });
+    }
+    
+    // Clear search results
+    setSearchResults([]);
   };
 
   // Handle search input key press
@@ -445,11 +501,6 @@ const MapboxMap = ({
       onHomeLocationChange(mockHomeCoordinates);
       toast.success("집 위치가 업데이트되었습니다");
     }
-    
-    // In a real app, this would:
-    // 1. Allow the user to place a marker or search for their address
-    // 2. Use the Mapbox Geocoding API to convert address to coordinates
-    // 3. Call onHomeLocationChange with the actual coordinates
   };
 
   // Handle form submission
@@ -467,7 +518,7 @@ const MapboxMap = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleSearchKeyPress}
-            disabled={readOnly}
+            disabled={readOnly || isSearching}
             className="pr-10"
           />
           <Button
@@ -476,9 +527,13 @@ const MapboxMap = ({
             size="icon"
             className="absolute right-0 top-0 h-full"
             onClick={searchLocation}
-            disabled={readOnly}
+            disabled={readOnly || isSearching || !searchQuery.trim()}
           >
-            <Search className="h-4 w-4" />
+            {isSearching ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
           </Button>
         </div>
         
@@ -510,6 +565,29 @@ const MapboxMap = ({
           </Button>
         )}
       </div>
+
+      {/* Search Results */}
+      {searchResults.length > 0 && !readOnly && (
+        <div className="p-3 border rounded-md bg-background shadow-sm max-h-60 overflow-y-auto">
+          <h3 className="text-sm font-medium mb-2">검색 결과</h3>
+          <ul className="space-y-2">
+            {searchResults.map((result) => (
+              <li key={result.id}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-left h-auto py-2"
+                  onClick={() => selectSearchResult(result)}
+                >
+                  <div className="flex items-start">
+                    <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                    <span>{result.place_name}</span>
+                  </div>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {isAddingLocation && !readOnly && (
         <form onSubmit={handleSubmit} className="p-4 border rounded-md bg-background shadow-sm">
