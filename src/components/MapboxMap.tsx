@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { Location } from "@/utils/surveyStorage";
 import { Button } from "@/components/ui/button";
@@ -203,14 +204,14 @@ const MapboxMap = ({
 
   // Location types with corresponding colors
   const locationTypes = [
-    { value: 'home', label: 'Home', color: '#4F46E5' },
-    { value: 'work', label: 'Work', color: '#10B981' },
-    { value: 'shopping', label: 'Shopping', color: '#F59E0B' },
-    { value: 'entertainment', label: 'Entertainment', color: '#EC4899' },
-    { value: 'education', label: 'Education', color: '#8B5CF6' },
-    { value: 'restaurant', label: 'Restaurant', color: '#EF4444' },
-    { value: 'outdoor', label: 'Outdoor', color: '#22C55E' },
-    { value: 'other', label: 'Other', color: '#6B7280' },
+    { value: 'home', label: '집', color: '#4F46E5' },
+    { value: 'work', label: '직장', color: '#10B981' },
+    { value: 'shopping', label: '쇼핑', color: '#F59E0B' },
+    { value: 'entertainment', label: '엔터테인먼트', color: '#EC4899' },
+    { value: 'education', label: '교육', color: '#8B5CF6' },
+    { value: 'restaurant', label: '식당', color: '#EF4444' },
+    { value: 'outdoor', label: '야외', color: '#22C55E' },
+    { value: 'other', label: '기타', color: '#6B7280' },
   ];
 
   // Get color for location type
@@ -359,7 +360,7 @@ const MapboxMap = ({
   // Add new location
   const addNewLocation = () => {
     if (!newLocation.name || !newLocation.type) {
-      toast.error("Please provide a name and type for the location");
+      toast.error("장소명과 유형을 입력해주세요");
       return;
     }
 
@@ -386,7 +387,7 @@ const MapboxMap = ({
     setNewLocation({ name: '', type: 'home' });
     setIsAddingLocation(false);
     
-    toast.success("New location added");
+    toast.success("새 위치가 추가되었습니다");
     
     // In a real application, we would use geocoding to find the actual coordinates
     // based on an address input from the user
@@ -395,12 +396,12 @@ const MapboxMap = ({
   // Search location (mock implementation)
   const searchLocation = () => {
     if (!searchQuery.trim()) {
-      toast.error("Please enter a search query");
+      toast.error("검색어를 입력해주세요");
       return;
     }
 
     // Mock geocoding - in a real app this would call the Mapbox Geocoding API
-    toast.success(`Found location: ${searchQuery}`);
+    toast.success(`위치 찾음: ${searchQuery}`);
     
     // Generate mock coordinates near the home location
     const homeLatitude = homeCoordinates ? homeCoordinates[1] : 40.7128;
@@ -442,7 +443,7 @@ const MapboxMap = ({
     
     if (onHomeLocationChange) {
       onHomeLocationChange(mockHomeCoordinates);
-      toast.success("Home location updated");
+      toast.success("집 위치가 업데이트되었습니다");
     }
     
     // In a real app, this would:
@@ -462,7 +463,7 @@ const MapboxMap = ({
       <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
         <div className="relative flex-grow">
           <Input
-            placeholder="Search for a location..."
+            placeholder="위치 검색..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleSearchKeyPress}
@@ -484,7 +485,7 @@ const MapboxMap = ({
         {!homeCoordinates && !readOnly && (
           <Button type="button" onClick={setHomeLocation} className="whitespace-nowrap">
             <MapPin className="mr-2 h-4 w-4" />
-            Set Home Location
+            집 위치 설정
           </Button>
         )}
         
@@ -498,12 +499,12 @@ const MapboxMap = ({
             {isAddingLocation ? (
               <>
                 <X className="mr-2 h-4 w-4" />
-                Cancel
+                취소
               </>
             ) : (
               <>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Location
+                위치 추가
               </>
             )}
           </Button>
@@ -514,10 +515,10 @@ const MapboxMap = ({
         <form onSubmit={handleSubmit} className="p-4 border rounded-md bg-background shadow-sm">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label htmlFor="locationName">Location Name</Label>
+              <Label htmlFor="locationName">위치 이름</Label>
               <Input
                 id="locationName"
-                placeholder="e.g. Work, Gym, Favorite Restaurant"
+                placeholder="예: 직장, 체육관, 좋아하는 식당"
                 value={newLocation.name}
                 onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
                 required
@@ -525,13 +526,13 @@ const MapboxMap = ({
             </div>
             
             <div className="space-y-1">
-              <Label htmlFor="locationType">Location Type</Label>
+              <Label htmlFor="locationType">위치 유형</Label>
               <Select
                 value={newLocation.type}
                 onValueChange={(value) => setNewLocation({ ...newLocation, type: value })}
               >
                 <SelectTrigger id="locationType">
-                  <SelectValue placeholder="Select a type" />
+                  <SelectValue placeholder="유형 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   {locationTypes.map((type) => (
@@ -550,26 +551,26 @@ const MapboxMap = ({
             </div>
             
             <div className="space-y-1">
-              <Label htmlFor="frequency">Visit Frequency</Label>
+              <Label htmlFor="frequency">방문 빈도</Label>
               <Select
                 value={newLocation.frequency}
                 onValueChange={(value) => setNewLocation({ ...newLocation, frequency: value })}
               >
                 <SelectTrigger id="frequency">
-                  <SelectValue placeholder="How often do you visit?" />
+                  <SelectValue placeholder="얼마나 자주 방문하시나요?" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="rarely">Rarely</SelectItem>
+                  <SelectItem value="daily">매일</SelectItem>
+                  <SelectItem value="weekly">매주</SelectItem>
+                  <SelectItem value="monthly">매월</SelectItem>
+                  <SelectItem value="rarely">드물게</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div className="flex items-end">
               <Button type="submit" className="w-full">
-                Add This Location
+                위치 추가하기
               </Button>
             </div>
           </div>
@@ -584,7 +585,7 @@ const MapboxMap = ({
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
             <div className="text-center">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-              <p className="mt-2 text-sm text-muted-foreground">Loading map...</p>
+              <p className="mt-2 text-sm text-muted-foreground">지도 로딩 중...</p>
             </div>
           </div>
         )}
@@ -593,14 +594,14 @@ const MapboxMap = ({
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
             <div className="text-center p-6 rounded-lg max-w-md">
               <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Set Your Home Location</h3>
+              <h3 className="text-lg font-medium mb-2">집 위치를 설정하세요</h3>
               <p className="text-muted-foreground mb-4">
-                Please set your home location to see places you frequently visit on the map.
+                지도에서 자주 방문하는 장소를 보려면 먼저 집 위치를 설정해주세요.
               </p>
               {!readOnly && (
                 <Button onClick={setHomeLocation}>
                   <MapPin className="mr-2 h-4 w-4" />
-                  Set Home Location
+                  집 위치 설정
                 </Button>
               )}
             </div>
@@ -638,7 +639,7 @@ const MapboxMap = ({
       {locations.length === 0 && homeCoordinates && !isAddingLocation && !readOnly && (
         <div className="text-center p-4 border border-dashed rounded-md">
           <p className="text-sm text-muted-foreground">
-            No locations added yet. Click "Add Location" to mark places you frequently visit.
+            아직 추가된 위치가 없습니다. "위치 추가" 버튼을 클릭하여 자주 방문하는 장소를 표시하세요.
           </p>
         </div>
       )}

@@ -30,7 +30,7 @@ const Survey = () => {
           <Link to="/">
             <Button variant="ghost" size="sm" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Home
+              홈으로
             </Button>
           </Link>
         </div>
@@ -45,10 +45,10 @@ const Survey = () => {
               className="max-w-4xl mx-auto bg-background rounded-xl shadow-sm border p-6 sm:p-8"
             >
               <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold">Lifestyle Survey</h1>
+                <h1 className="text-2xl font-bold">생활양식 설문조사</h1>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Map className="h-4 w-4 mr-1" />
-                  <span>Using Mapbox for location visualization</span>
+                  <span>위치 시각화에 맵박스 사용</span>
                 </div>
               </div>
               <SurveyForm onComplete={handleSurveyComplete} />
