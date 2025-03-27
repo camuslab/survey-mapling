@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { 
   SurveyStep, 
   SurveyData, 
@@ -28,8 +27,11 @@ import FormStepper from "./FormStepper";
 import { toast } from "sonner";
 import { CheckCircle, Loader2 } from "lucide-react";
 
-const SurveyForm = () => {
-  const navigate = useNavigate();
+interface SurveyFormProps {
+  onComplete?: () => void;
+}
+
+const SurveyForm = ({ onComplete }: SurveyFormProps) => {
   const [currentStep, setCurrentStep] = useState<SurveyStep>(SurveyStep.PersonalInfo);
   const [surveyData, setSurveyData] = useState<SurveyData>(getEmptySurveyData());
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -107,7 +109,11 @@ const SurveyForm = () => {
     setSurveyData(getEmptySurveyData());
     setCurrentStep(SurveyStep.PersonalInfo);
     setHasAcceptedTerms(false);
-    navigate("/");
+    
+    // Instead of directly using useNavigate, use the callback prop
+    if (onComplete) {
+      onComplete();
+    }
   };
 
   // Age options

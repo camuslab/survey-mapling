@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SurveyForm from "@/components/SurveyForm";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react";
 
 const Survey = () => {
   const [showContent, setShowContent] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Small delay to trigger entrance animation
@@ -17,6 +18,10 @@ const Survey = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  const handleSurveyComplete = () => {
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -39,7 +44,7 @@ const Survey = () => {
               transition={{ duration: 0.5 }}
               className="max-w-4xl mx-auto bg-background rounded-xl shadow-sm border p-6 sm:p-8"
             >
-              <SurveyForm />
+              <SurveyForm onComplete={handleSurveyComplete} />
             </motion.div>
           )}
         </AnimatePresence>

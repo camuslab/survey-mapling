@@ -50,6 +50,8 @@ export const getEmptySurveyData = (): SurveyData => ({
     homeCity: '',
     homeState: '',
     homeZip: '',
+    // Initialize with empty coordinates
+    homeCoordinates: [-74.0060, 40.7128], // Default to NYC
   },
   locations: [],
 });
@@ -62,7 +64,21 @@ export const saveSurveyData = (data: SurveyData): void => {
 // Load survey data from local storage
 export const loadSurveyData = (): SurveyData => {
   const savedData = localStorage.getItem(SURVEY_STORAGE_KEY);
-  return savedData ? JSON.parse(savedData) : getEmptySurveyData();
+  if (!savedData) return getEmptySurveyData();
+  
+  try {
+    const parsedData = JSON.parse(savedData) as SurveyData;
+    
+    // Ensure homeCoordinates is always defined for form stepper to work correctly
+    if (!parsedData.personalInfo.homeCoordinates) {
+      parsedData.personalInfo.homeCoordinates = [-74.0060, 40.7128]; // Default to NYC
+    }
+    
+    return parsedData;
+  } catch (e) {
+    console.error("Error parsing saved survey data:", e);
+    return getEmptySurveyData();
+  }
 };
 
 // Clear survey data from local storage
